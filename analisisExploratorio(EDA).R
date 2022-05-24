@@ -35,3 +35,4 @@ for(i in c(3,4,5)){
 # ahora ya no tenemos valores nulos
 summary(datos)
 
+####
