@@ -7,3 +7,4 @@ data(nafld)
 write.csv(nafld1, file = "dataset.csv")
 
 head(nafld1)
+head(nafld2)
