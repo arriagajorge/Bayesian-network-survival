@@ -1,3 +1,4 @@
+options(digits = 7)
 ######## analisis descriptivo de datos
 library(survival)
 data(nafld)
@@ -20,6 +21,13 @@ dim(datos[complete.cases(datos), ])
 # dividimos las tuplas por la variable male e imputamos los valores faltantes
 # utlizando la media muestral
 
+# boxplots antes de imputar datos
+par(mfrow = c(1,4))
+boxplot(datos$age ~ datos$male)
+boxplot(datos$weight ~ datos$male)
+boxplot(datos$height ~ datos$male)
+boxplot(datos$bmi ~ datos$male)
+
 for(i in c(3,4,5)){
     # extraemos los grupos
     datosGenero0 = datos[datos$male == 0, i]
@@ -35,4 +43,18 @@ for(i in c(3,4,5)){
 # ahora ya no tenemos valores nulos
 summary(datos)
 
-####
+# boxplots despues de imputar datos
+par(mfrow = c(1,4))
+boxplot(datos$age ~ datos$male)
+boxplot(datos$weight ~ datos$male)
+boxplot(datos$height ~ datos$male)
+boxplot(datos$bmi ~ datos$male)
+# no podemos quitar outliers porque se puede dar el caso de tener
+# personas muy obesas o muy altas y viceversa. Ademas para el bmi tampoco
+# podemos omitir nada mas.
+
+# graficos de dispersion de bmi con peso y altura
+par(mfrow = c(1,3))
+plot(datos$bmi, datos$weight, col = datos$male)
+plot(datos$bmi, datos$height, col = datos$male)
+plot(datos$bmi, datos$age, col = datos$male)
