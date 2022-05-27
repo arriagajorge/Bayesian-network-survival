@@ -20,14 +20,20 @@ dim(datos[complete.cases(datos), ])
 
 # dividimos las tuplas por la variable male e imputamos los valores faltantes
 # utlizando la media muestral
-
+library(ggplot2)
+library(cowplot) # para poner graficas a lado de otras
 # boxplots antes de imputar datos
-par(mfrow = c(1,4))
-boxplot(datos$age ~ datos$male)
-boxplot(datos$weight ~ datos$male)
-boxplot(datos$height ~ datos$male)
-boxplot(datos$bmi ~ datos$male)
+box1 = ggplot(datos, aes(x=male, y=age, fill = male)) +
+    geom_boxplot()
+box2 = ggplot(datos, aes(x=male, y=weight, fill = male)) +
+    geom_boxplot()
+box3 = ggplot(datos, aes(x=male, y=height, fill = male)) +
+    geom_boxplot()
+box4 = ggplot(datos, aes(x=male, y=bmi, fill = male)) +
+    geom_boxplot()
+plot_grid(box1, box2, box3, box4)
 
+# imputamos valores faltantes por grupo de mujeres y de hombres
 for(i in c(3,4,5)){
     # extraemos los grupos
     datosGenero0 = datos[datos$male == 0, i]
@@ -44,17 +50,24 @@ for(i in c(3,4,5)){
 summary(datos)
 
 # boxplots despues de imputar datos
-par(mfrow = c(1,4))
-boxplot(datos$age ~ datos$male)
-boxplot(datos$weight ~ datos$male)
-boxplot(datos$height ~ datos$male)
-boxplot(datos$bmi ~ datos$male)
+box1I = ggplot(datos, aes(x=male, y=age, fill = male)) +
+    geom_boxplot()
+box2I = ggplot(datos, aes(x=male, y=weight, fill = male)) +
+    geom_boxplot()
+box3I = ggplot(datos, aes(x=male, y=height, fill = male)) +
+    geom_boxplot()
+box4I = ggplot(datos, aes(x=male, y=bmi, fill = male)) +
+    geom_boxplot()
+plot_grid(box1I, box2I, box3I, box4I)
 # no podemos quitar outliers porque se puede dar el caso de tener
 # personas muy obesas o muy altas y viceversa. Ademas para el bmi tampoco
 # podemos omitir nada mas.
 
-# graficos de dispersion de bmi con peso y altura
-par(mfrow = c(1,3))
-plot(datos$bmi, datos$weight, col = datos$male)
-plot(datos$bmi, datos$height, col = datos$male)
-plot(datos$bmi, datos$age, col = datos$male)
+# graficos de dispersion 
+library(GGally)
+ggpairs(datos,
+        columns = c(1,3,4,5,6), 
+        aes(color = male, 
+            alpha = 0.5))
+# graficos de dispersion dos a dos
+pairs(datos[, -c(2,7)], col = datos$male)
