@@ -69,5 +69,3 @@ ggpairs(datos,
         columns = c(1,3,4,5,6), 
         aes(color = male, 
             alpha = 0.5))
-# graficos de dispersion dos a dos
-pairs(datos[, -c(2,7)], col = datos$male)
