@@ -73,8 +73,9 @@ chisq.test(discDatos$age, discDatos$height)
 # primera red
 #############################################################################
 #############################################################################
-# utilizaremos todas las variables menos bmi
-discDatos = discDatos[, -5]
+# utilizaremos todas las variables menos bmi y futime (pues esta la daremos
+# de manera explicita).
+discDatos = discDatos[, -c(5, 6)]
 # utilizaremos el modelo simple, donde todas las aristas apunten hacia la variable
 # status, es decir:
 redes = list()
@@ -84,8 +85,7 @@ arcs(redes[[1]]) = matrix(
     c("age", "status",
       "male", "status",
       "weight", "status",
-      "height", "status",
-      "futime", "status"),
+      "height", "status"),
     ncol = 2, byrow = T
 )
 plot(redes[[1]])
@@ -97,8 +97,12 @@ arcs(redes[[2]]) = matrix(
       "height", "status",
       "weight", "status",
       "male", "weight",
-      "male", "height",
-      "futime", "status"),
+      "male", "height"),
     ncol = 2, byrow = T
 )
 plot(redes[[2]])
+
+redTrain = list()
+# entrenamos la primera red
+redTrain[[1]] = bn.fit(redes[[1]], data = discDatos)
+redTrain[[1]]$status
