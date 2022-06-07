@@ -56,6 +56,12 @@ plot(discDatos$height ~ discDatos$male)
 plot(discDatos$bmi ~ discDatos$male)
 # los IMC son muy similares entre grupos.
 
+plot(discDatos$bmi ~ discDatos$weight)
+
+
+chisq.test(discDatos$age, discDatos$weight)
+chisq.test(discDatos$bmi, discDatos$weight)
+chisq.test(discDatos$age, discDatos$height)
 # recordemos el las variables bmi y weight tienen una correlacion igual a 0.870
 # y justo buscamos que las variables no estén correlacionadas (supuesto de 
 # distribucion multinomial), podemos quitar una, dado que bmi aporta mas informacion
