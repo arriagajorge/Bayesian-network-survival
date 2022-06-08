@@ -6,6 +6,8 @@ library(arules)
 data(nafld)
 datos = nafld1
 
+id = datos$id
+
 # nos quedamos con las columnas deseadas, quitamos los id's y los case.id's
 datos = datos[, -c(1, 7)]
 # pasamos a tipo factor a las variables male y status
@@ -73,14 +75,14 @@ chisq.test(discDatos$age, discDatos$height)
 # primera red
 #############################################################################
 #############################################################################
-# utilizaremos todas las variables menos bmi y futime (pues esta la daremos
-# de manera explicita).
-discDatos = discDatos[, -c(5, 6)]
+# utilizaremos todas las variables menos bmi 
+discDatos = discDatos[, -5]
+summary(discDatos)
 # utilizaremos el modelo simple, donde todas las aristas apunten hacia la variable
 # status, es decir:
 redes = list()
-
-redes[[1]] = empty.graph(names(discDatos))
+# no consideramos la variable futime en los datos
+redes[[1]] = empty.graph(names(discDatos[, -5]))
 arcs(redes[[1]]) = matrix(
     c("age", "status",
       "male", "status",
@@ -88,21 +90,61 @@ arcs(redes[[1]]) = matrix(
       "height", "status"),
     ncol = 2, byrow = T
 )
-plot(redes[[1]])
+#plot(redes[[1]])
 
 # segunda red, pero separando segun el genero
-redes[[2]] = empty.graph(names(discDatos))
-arcs(redes[[2]]) = matrix(
-    c("age", "status",
-      "height", "status",
-      "weight", "status",
-      "male", "weight",
-      "male", "height"),
-    ncol = 2, byrow = T
-)
-plot(redes[[2]])
+#redes[[2]] = empty.graph(names(discDatos[, -5]))
+#arcs(redes[[2]]) = matrix(
+#    c("age", "status",
+#      "height", "status",
+#      "weight", "status",
+#      "male", "weight",
+#      "male", "height"),
+#    ncol = 2, byrow = T
+#)
+#plot(redes[[2]])
 
-redTrain = list()
-# entrenamos la primera red
-redTrain[[1]] = bn.fit(redes[[1]], data = discDatos)
-redTrain[[1]]$status
+# haremos el ajuste por cada 365 dias
+t = c(); for(x in 1:19) t[x] = x * 365
+# guardaremos las 20 redes ajustadas
+redesAjustadas = list()
+# realizamos el ajuste de las redes
+
+# primera red para el primer subconjunto respecto al tiempo
+subcnjnto = subset(discDatos, futime <= t[1])
+redesAjustadas[[1]] = bn.fit(redes[[1]], data = subcnjnto[, -5],
+                             method = "bayes")
+# para el ultimo subconjunto de datos
+# ya casi no hay observaciones, predominan los ceros y unos
+subcnjnto = subset(discDatos, futime > t[19])
+redesAjustadas[[19]]  =bn.fit(redes[[1]], data = subcnjnto[, -5],
+                              method = "bayes")
+for(i in 2:(length(t)-1)){
+    # creamos los subconjunto de datos
+    subcnjnto = subset(discDatos, futime <= t[i] & futime > t[i-1])
+    redesAjustadas[[i]] = bn.fit(redes[[1]], data = subcnjnto[, -5],
+                                 method = "bayes")
+}
+
+# tenemos 108 probabilidades condicionales, de las cuales nos interesan las que
+# tienen por valor a status = 0, pues es la probabilidad de sobrevivir al tiempo
+# que se indica
+
+# tenemos 54 modelos y 19 (redes) estimaciones para cada modelo
+# por cada red hay 54 probas, de las que solo queremos las que están
+# indexadas por un numero impar, es decir, las que tienen status = 0
+probM = matrix(NA, nrow = length(redesAjustadas[[1]]$status$prob)/2, ncol = 19)
+for(i in 1:19){
+    probas = redesAjustadas[[i]]$status$prob
+    pivP = c()
+    for(j in 1:length(probas)){
+        if(j%%2 != 0){
+            pivP = c(pivP,probas[j])
+        }
+    }
+    probM[, i] = pivP 
+    
+}
+
+matplot(t(probM), type = "l", lwd  = 2)
+
