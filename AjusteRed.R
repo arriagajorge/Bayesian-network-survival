@@ -92,17 +92,122 @@ arcs(redes[[1]]) = matrix(
 )
 #plot(redes[[1]])
 
-# segunda red, pero separando segun el genero
-#redes[[2]] = empty.graph(names(discDatos[, -5]))
-#arcs(redes[[2]]) = matrix(
-#    c("age", "status",
-#      "height", "status",
-#      "weight", "status",
-#      "male", "weight",
-#      "male", "height"),
-#    ncol = 2, byrow = T
-#)
-#plot(redes[[2]])
+# segunda red, pero metiendo la variable del tiempo
+redes[[2]] = empty.graph(names(discDatos))
+arcs(redes[[2]]) = matrix(
+    c("age", "status",
+      "height", "status",
+      "weight", "status",
+      "male", "status",
+      "futime","status"),
+    ncol = 2, byrow = T
+)
+plot(redes[[2]])
+
+# discretizamos la variable futime
+t = c(); for(x in 1:19) t[x] = x * 365
+# para el primer año
+discDatos[which(discDatos[, 5] <= t[1]), 5] = 1
+discDatos[which(discDatos[, 5] >t[19]), 5] = 19
+for(i in 2:19){
+    discDatos[which(discDatos[, 5]<=t[i] & discDatos[, 5]>t[i-1]), 5] = i
+}
+discDatos$futime = as.factor(discDatos$futime)
+
+# para el entrenamiento de nuestra red, tenemos
+red2Ajustada = bn.fit(redes[[2]], data = discDatos, method = "bayes")
+class(red2Ajustada$status$prob)
+
+probas = red2Ajustada$status$prob
+length(probas)
+
+# para un tiempo, hay 18 combinaciones posibles de nuestras probabilidades
+# condicionales. Cada combinacion nos da 6 probabilidades, por lo que el objeto
+# red2Ajustada$status$prob es un arreglo de 2052 probabilidades condicionales
+# de las cuales solo nos interesan las que tienen por status = 0.
+
+# para obtener las probas de solamente un tiempo, debemos ir tomando de 18*6=108
+# en 108 y luego extraer las probas que tengan status = 0
+ids = c(); for(i in 1:2052) ids[i] = i
+porAnos = list()
+obs = c(); for(i in 1:19) obs[i] = i * 108
+porAnos[[1]] = probas[which(ids <= obs[1])]
+for(i in 2:19){
+    porAnos[[i]] = probas[which(ids <= obs[i] & ids > obs[i-1])]
+}
+
+# ya teniendo las probabilidades por años, procedemos a extraer las que tienen
+# status = 0. Estas se encuentran en las posiciones impares y como ahora tenemos
+# 108 probablidades por año, estas se nos van a reducir a la mitad, por lo que
+# tendremos 54 probabilidades por cada año, estas van a corresponder
+# a los 54 modelos que teniamos previstos
+probM2 = matrix(NA, nrow = length(porAnos[[1]])/2, ncol = 19)
+for(i in 1:19){
+    probas = porAnos[[i]]
+    pivP = c()
+    for(j in 1:length(probas)){
+        if(j%%2 != 0){
+            pivP = c(pivP,probas[j])
+        }
+    }
+    probM2[, i] = pivP 
+    
+}
+par(mfrow=c(2,2))
+matplot(t(probM2[1:5, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(1:5), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM2[6:10, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(6:10), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM2[11:15, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(11:15), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM2[16:20, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(16:20), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+
+par(mfrow=c(2,2))
+matplot(t(probM2[21:25, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(21:25), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM2[26:30, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(26:30), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[31:35, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(31:35), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM2[36:40, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(36:40), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+
+par(mfrow=c(2,2))
+matplot(t(probM2[41:45, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(41:45), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM2[46:50, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(46:50), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM2[51:54, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(50:54), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+
+
+
+
+#
+
 
 # haremos el ajuste por cada 365 dias
 t = c(); for(x in 1:19) t[x] = x * 365
