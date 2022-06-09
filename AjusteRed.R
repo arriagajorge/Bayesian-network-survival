@@ -146,5 +146,66 @@ for(i in 1:19){
     
 }
 
-matplot(t(probM), type = "l", lwd  = 2)
+par(mfrow=c(2,2))
+matplot(t(probM[1:5, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(1:5), col = rainbow(5),
+        cex = 0.5, fill = rainbow(5))
+matplot(t(probM[6:10, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(6:10), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[11:15, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(11:15), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[16:20, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(16:20), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+
+par(mfrow=c(2,2))
+matplot(t(probM[21:25, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(21:25), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[26:30, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(26:30), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[31:35, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(31:35), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[36:40, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(36:40), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+
+par(mfrow=c(2,2))
+matplot(t(probM[41:45, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(41:45), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[46:50, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(46:50), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[51:54, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(50:54), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+
+
+# de cada modelo, buscaremos la probabilidad de supervivencia mas pequeña
+# y veremos en que tiempo ocurre, para al final sacar conclusiones
+
+# tiempos de ocurrencia de cada modelo
+toc = list()
+for(i in 1:52){
+    toc[[i]] = which(probM[i, ] == min(probM[i, ]))   
+}
+
+which(probM[1, ] == min(probM[1, ]))
+
 
