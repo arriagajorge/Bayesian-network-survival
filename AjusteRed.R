@@ -90,7 +90,135 @@ arcs(redes[[1]]) = matrix(
       "height", "status"),
     ncol = 2, byrow = T
 )
-#plot(redes[[1]])
+plot(redes[[1]])
+#########################################################################
+#########################################################################
+#########################################################################
+# ajuste de la primer red
+#########################################################################
+#########################################################################
+#########################################################################
+
+
+# haremos el ajuste por cada 365 dias
+t = c(); for(x in 1:19) t[x] = x * 365
+# guardaremos las 20 redes ajustadas
+redesAjustadas = list()
+# realizamos el ajuste de las redes
+
+# primera red para el primer subconjunto respecto al tiempo
+subcnjnto = subset(discDatos, futime <= t[1])
+redesAjustadas[[1]] = bn.fit(redes[[1]], data = subcnjnto[, -5],
+                             method = "bayes")
+# para el ultimo subconjunto de datos
+# ya casi no hay observaciones, predominan los ceros y unos
+subcnjnto = subset(discDatos, futime > t[19])
+redesAjustadas[[19]]  =bn.fit(redes[[1]], data = subcnjnto[, -5],
+                              method = "bayes")
+for(i in 2:(length(t)-1)){
+    # creamos los subconjunto de datos
+    subcnjnto = subset(discDatos, futime <= t[i] & futime > t[i-1])
+    redesAjustadas[[i]] = bn.fit(redes[[1]], data = subcnjnto[, -5],
+                                 method = "bayes")
+}
+
+# tenemos 108 probabilidades condicionales, de las cuales nos interesan las que
+# tienen por valor a status = 0, pues es la probabilidad de sobrevivir al tiempo
+# que se indica
+
+# tenemos 54 modelos y 19 (redes) estimaciones para cada modelo
+# por cada red hay 54 probas, de las que solo queremos las que están
+# indexadas por un numero impar, es decir, las que tienen status = 0
+probM = matrix(NA, nrow = length(redesAjustadas[[1]]$status$prob)/2, ncol = 19)
+for(i in 1:19){
+    probas = redesAjustadas[[i]]$status$prob
+    pivP = c()
+    for(j in 1:length(probas)){
+        if(j%%2 != 0){
+            pivP = c(pivP,probas[j])
+        }
+    }
+    probM[, i] = pivP 
+    
+}
+
+par(mfrow=c(2,2))
+matplot(t(probM[1:5, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(1:5), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[6:10, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(6:10), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[11:15, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(11:15), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[16:20, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(16:20), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+
+par(mfrow=c(2,2))
+matplot(t(probM[21:25, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(21:25), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[26:30, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(26:30), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[31:35, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(31:35), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[36:40, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(36:40), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+
+par(mfrow=c(2,2))
+matplot(t(probM[41:45, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(41:45), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[46:50, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(46:50), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+matplot(t(probM[51:54, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
+        xlab = "Tiempo en años", col = rainbow(5))
+legend("topright", legend = as.character(50:54), col = rainbow(5),
+       cex = 0.5, fill = rainbow(5))
+
+redesAjustadas[[1]]
+# de nuestros modelos, veremos el tiempo donde la probabilidad de 
+# supervivencia es menor a 0.5
+# no todos los modelos presentan esta característica, por lo que será de gran
+# importancia reportar los que si cumplen lo que queremos
+toc = list()
+for(i in 1:52){
+    toc[[i]] = which(probM[i, ]<0.5)   
+}
+
+# los modelos que tienen alguna probabilidad menor a 0.5 son los siguientes
+mod = c()
+for(i in 1:52){
+    if(length(toc[[i]]) != 0){
+        mod = c(mod, i)
+    }
+}
+mod
+
+
+#########################################################################
+#########################################################################
+#########################################################################
+# ajuste de la segunda red
+#########################################################################
+#########################################################################
+#########################################################################
 
 # segunda red, pero metiendo la variable del tiempo
 redes[[2]] = empty.graph(names(discDatos))
@@ -203,114 +331,39 @@ matplot(t(probM2[51:54, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
 legend("topright", legend = as.character(50:54), col = rainbow(5),
        cex = 0.5, fill = rainbow(5))
 
-
-
-
-#
-
-
-# haremos el ajuste por cada 365 dias
-t = c(); for(x in 1:19) t[x] = x * 365
-# guardaremos las 20 redes ajustadas
-redesAjustadas = list()
-# realizamos el ajuste de las redes
-
-# primera red para el primer subconjunto respecto al tiempo
-subcnjnto = subset(discDatos, futime <= t[1])
-redesAjustadas[[1]] = bn.fit(redes[[1]], data = subcnjnto[, -5],
-                             method = "bayes")
-# para el ultimo subconjunto de datos
-# ya casi no hay observaciones, predominan los ceros y unos
-subcnjnto = subset(discDatos, futime > t[19])
-redesAjustadas[[19]]  =bn.fit(redes[[1]], data = subcnjnto[, -5],
-                              method = "bayes")
-for(i in 2:(length(t)-1)){
-    # creamos los subconjunto de datos
-    subcnjnto = subset(discDatos, futime <= t[i] & futime > t[i-1])
-    redesAjustadas[[i]] = bn.fit(redes[[1]], data = subcnjnto[, -5],
-                                 method = "bayes")
-}
-
-# tenemos 108 probabilidades condicionales, de las cuales nos interesan las que
-# tienen por valor a status = 0, pues es la probabilidad de sobrevivir al tiempo
-# que se indica
-
-# tenemos 54 modelos y 19 (redes) estimaciones para cada modelo
-# por cada red hay 54 probas, de las que solo queremos las que están
-# indexadas por un numero impar, es decir, las que tienen status = 0
-probM = matrix(NA, nrow = length(redesAjustadas[[1]]$status$prob)/2, ncol = 19)
-for(i in 1:19){
-    probas = redesAjustadas[[i]]$status$prob
-    pivP = c()
-    for(j in 1:length(probas)){
-        if(j%%2 != 0){
-            pivP = c(pivP,probas[j])
-        }
-    }
-    probM[, i] = pivP 
-    
-}
-
-par(mfrow=c(2,2))
-matplot(t(probM[1:5, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
-        xlab = "Tiempo en años", col = rainbow(5))
-legend("topright", legend = as.character(1:5), col = rainbow(5),
-        cex = 0.5, fill = rainbow(5))
-matplot(t(probM[6:10, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
-        xlab = "Tiempo en años", col = rainbow(5))
-legend("topright", legend = as.character(6:10), col = rainbow(5),
-       cex = 0.5, fill = rainbow(5))
-matplot(t(probM[11:15, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
-        xlab = "Tiempo en años", col = rainbow(5))
-legend("topright", legend = as.character(11:15), col = rainbow(5),
-       cex = 0.5, fill = rainbow(5))
-matplot(t(probM[16:20, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
-        xlab = "Tiempo en años", col = rainbow(5))
-legend("topright", legend = as.character(16:20), col = rainbow(5),
-       cex = 0.5, fill = rainbow(5))
-
-par(mfrow=c(2,2))
-matplot(t(probM[21:25, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
-        xlab = "Tiempo en años", col = rainbow(5))
-legend("topright", legend = as.character(21:25), col = rainbow(5),
-       cex = 0.5, fill = rainbow(5))
-matplot(t(probM[26:30, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
-        xlab = "Tiempo en años", col = rainbow(5))
-legend("topright", legend = as.character(26:30), col = rainbow(5),
-       cex = 0.5, fill = rainbow(5))
-matplot(t(probM[31:35, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
-        xlab = "Tiempo en años", col = rainbow(5))
-legend("topright", legend = as.character(31:35), col = rainbow(5),
-       cex = 0.5, fill = rainbow(5))
-matplot(t(probM[36:40, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
-        xlab = "Tiempo en años", col = rainbow(5))
-legend("topright", legend = as.character(36:40), col = rainbow(5),
-       cex = 0.5, fill = rainbow(5))
-
-par(mfrow=c(2,2))
-matplot(t(probM[41:45, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
-        xlab = "Tiempo en años", col = rainbow(5))
-legend("topright", legend = as.character(41:45), col = rainbow(5),
-       cex = 0.5, fill = rainbow(5))
-matplot(t(probM[46:50, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
-        xlab = "Tiempo en años", col = rainbow(5))
-legend("topright", legend = as.character(46:50), col = rainbow(5),
-       cex = 0.5, fill = rainbow(5))
-matplot(t(probM[51:54, ]), type = "l", lwd  = 2, ylab = "Proba de sobrevivir",
-        xlab = "Tiempo en años", col = rainbow(5))
-legend("topright", legend = as.character(50:54), col = rainbow(5),
-       cex = 0.5, fill = rainbow(5))
-
-
-# de cada modelo, buscaremos la probabilidad de supervivencia mas pequeña
-# y veremos en que tiempo ocurre, para al final sacar conclusiones
-
-# tiempos de ocurrencia de cada modelo
-toc = list()
+# de nuestros modelos, veremos el tiempo donde la probabilidad de 
+# supervivencia es menor a 0.5
+# no todos los modelos presentan esta característica, por lo que será de gran
+# importancia reportar los que si cumplen lo que queremos
+toc2 = list()
 for(i in 1:52){
-    toc[[i]] = which(probM[i, ] == min(probM[i, ]))   
+    toc2[[i]] = which(probM2[i, ]<0.5)   
 }
+toc2
+# los modelos que tienen alguna probabilidad menor a 0.5 son los siguientes
+mod2 = c()
+for(i in 1:52){
+    if(length(toc2[[i]]) != 0){
+        mod2 = c(mod2, i)
+    }
+}
+mod2
 
-which(probM[1, ] == min(probM[1, ]))
+########################################################################
 
+# ajuste del modelo de riesgos proporcionales de cox
+library(survminer)
+summary(discDatos)
+discDatos$futime = as.numeric(discDatos$futime)
+discDatos$status = as.numeric(discDatos$status)
+cox.fit = coxph(Surv(futime, status)~age+male+weight+height,
+                data = discDatos)
 
+summary(cox.fit)
+summarycox = as.data.frame(cox.fit$coefficients)
+summarycox = cbind(summarycox, exp(summarycox$`cox.fit$coefficients`))
+str(cox.fit)
+colnames(summarycox) = c("coef", "exp. coef")
+summarycox
+# para ver si el modelo de riesgos proporcionales se cumple, pero no funciona
+#test.cox = cox.zph(cox.fit)
